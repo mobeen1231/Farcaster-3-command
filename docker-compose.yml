@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  snapchain:
+    image: farcasterxyz/snapchain:latest
+    container_name: farcaster-read-node
+    ports:
+      - "3381:3381"
+      - "3382:3382"
+    volumes:
+      - snapchain-data:/data
+    restart: unless-stopped
+    command: ["--rpc-addr=0.0.0.0:3381", "--read-only=true"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+
+  client:
+    build: ./client
+    depends_on:
+      - snapchain
+    environment:
+      - READ_NODE_URL=http://snapchain:3381
+      - FID=${FID:-1}
+    ports:
+      - "3000:3000"
+
+volumes:
+  snapchain-data:
